@@ -1,25 +1,29 @@
 import express from 'express';
 import { config } from './config/settings.js';
+import { connectDatabase } from './config/database.js';
 
 const app = express();
 
-// Middleware أساسي
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Route تجريبي
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'API جاهزة للعمل',
+    message: 'API is ready',
     status: 'running'
   });
 });
 
-// بدء الخادم
-const startServer = () => {
-  app.listen(config.port, () => {
-    console.log(`الخادم يعمل على المنفذ ${config.port}`);
-  });
+const startServer = async () => {
+  try {
+    await connectDatabase();
+    app.listen(config.port, () => {
+      console.log(`Server running on port ${config.port}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error.message);
+    process.exit(1);
+  }
 };
 
 startServer();
