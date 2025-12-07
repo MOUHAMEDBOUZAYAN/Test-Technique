@@ -8,6 +8,10 @@ export const registerUser = async (userData) => {
     throw new Error('Email already exists');
   }
 
+  if (userData.password !== userData.confirmPassword) {
+    throw new Error('Passwords do not match');
+  }
+
   const user = new User({
     nom: userData.nom,
     prenom: userData.prenom,
