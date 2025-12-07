@@ -1,6 +1,8 @@
 import express from 'express';
 import { config } from './config/settings.js';
 import { connectDatabase } from './config/database.js';
+import authRoutes from './routes/auth.routes.js';
+import { errorHandler, notFound } from './middlewares/error.middleware.js';
 
 const app = express();
 
@@ -13,6 +15,11 @@ app.get('/', (req, res) => {
     status: 'running'
   });
 });
+
+app.use('/api/auth', authRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 const startServer = async () => {
   try {

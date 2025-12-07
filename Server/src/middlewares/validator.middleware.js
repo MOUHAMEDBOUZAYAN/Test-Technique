@@ -1,93 +1,77 @@
-export const validateRegister = (req, res, next) => {
-  const { nom, prenom, email, password } = req.body;
-  const errors = [];
+import { body, validationResult } from 'express-validator';
 
-  if (!nom || nom.trim().length < 2 || nom.trim().length > 50) {
-    errors.push('Nom must be between 2 and 50 characters');
-  }
-
-  if (!prenom || prenom.trim().length < 2 || prenom.trim().length > 50) {
-    errors.push('Prenom must be between 2 and 50 characters');
-  }
-
-  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-    errors.push('Valid email is required');
-  }
-
-  if (!password || password.length < 6) {
-    errors.push('Password must be at least 6 characters');
-  }
-
-  if (errors.length > 0) {
+export const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
       message: 'Validation failed',
-      errors: errors
+      errors: errors.array().map(err => ({
+        field: err.path,
+        message: err.msg
+      }))
     });
   }
-
   next();
 };
 
-export const validateLogin = (req, res, next) => {
-  const { email, password } = req.body;
-  const errors = [];
+export const validateRegister = [
+  body('nom')
+    .trim()
+    .notEmpty().withMessage('Nom is required')
+    .isLength({ min: 2, max: 50 }).withMessage('Nom must be between 2 and 50 characters'),
+  
+  body('prenom')
+    .trim()
+    .notEmpty().withMessage('Prenom is required')
+    .isLength({ min: 2, max: 50 }).withMessage('Prenom must be between 2 and 50 characters'),
+  
+  body('email')
+    .trim()
+    .notEmpty().withMessage('Email is required')
+    .isEmail().withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  
+  body('password')
+    .notEmpty().withMessage('Password is required')
+    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  
+  handleValidationErrors
+];
 
-  if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-    errors.push('Valid email is required');
-  }
+export const validateLogin = [
+  body('email')
+    .trim()
+    .notEmpty().withMessage('Email is required')
+    .isEmail().withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  
+  body('password')
+    .notEmpty().withMessage('Password is required'),
+  
+  handleValidationErrors
+];
 
-  if (!password) {
-    errors.push('Password is required');
-  }
-
-  if (errors.length > 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: errors
-    });
-  }
-
-  next();
-};
-
-export const validateUpdate = (req, res, next) => {
-  const { nom, prenom, email, password } = req.body;
-  const errors = [];
-
-  if (nom !== undefined) {
-    if (nom.trim().length < 2 || nom.trim().length > 50) {
-      errors.push('Nom must be between 2 and 50 characters');
-    }
-  }
-
-  if (prenom !== undefined) {
-    if (prenom.trim().length < 2 || prenom.trim().length > 50) {
-      errors.push('Prenom must be between 2 and 50 characters');
-    }
-  }
-
-  if (email !== undefined) {
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      errors.push('Valid email is required');
-    }
-  }
-
-  if (password !== undefined) {
-    if (password.length < 6) {
-      errors.push('Password must be at least 6 characters');
-    }
-  }
-
-  if (errors.length > 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: errors
-    });
-  }
-
-  next();
-};
-
+export const validateUpdate = [
+  body('nom')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 50 }).withMessage('Nom must be between 2 and 50 characters'),
+  
+  body('prenom')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 50 }).withMessage('Prenom must be between 2 and 50 characters'),
+  
+  body('email')
+    .optional()
+    .trim()
+    .isEmail().withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  
+  body('password')
+    .optional()
+    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  
+  handleValidationErrors
+];
